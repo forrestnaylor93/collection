@@ -579,16 +579,20 @@ class CoordinatePlane{
                             this.make_line();
                         break;
                         case "KeyA":
-                            this.origin_left(30);
+                            if(this.is_mouse_on){
+                            this.origin_left(30);}
                         break;
                         case "KeyD":
-                            this.origin_right(30);
+                            if(this.is_mouse_on){
+                            this.origin_right(30);}
                         break;
                         case "KeyW":
-                            this.origin_up(30);
+                            if(this.is_mouse_on){
+                            this.origin_up(30);}
                         break;
                         case "KeyS":
-                            this.origin_down(30);
+                            if(this.is_mouse_on){
+                            this.origin_down(30);}
                         break;
                         default:
                     }
@@ -665,6 +669,7 @@ class CoordinatePlane{
 
             wheel_listeners = (e)=>{
                 //console.log(e)
+                if(!this.is_mouse_on){return}
                 if(e.deltaY < 0){
                     this.zoom_in();
                 }

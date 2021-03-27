@@ -14,6 +14,7 @@ class Assesment2{
         //this.handle_finished_scene();
     }
 
+
     handle_finished_scene = ()=>{
         this.canvas.addEventListener('keydown', (e)=>{
             if(this.currentScene.end_condition){
@@ -69,26 +70,42 @@ class Scene{
     constructor(ctx){
         this.end_condition = false; // for ending scene
         this.is_task_complete = false; // for when user task finished - make a prompt for the next scene
-
         
 
         this.ctx = ctx;
         this.canvas = this.ctx.canvas;
 
+
+
         // screen sizing
         this.desired_scale = {x: 16, y: 9};
         this.actual_scale = {x: this.canvas.width, y: this.canvas.height};
+        this.use_scale = {x:0, y:0};
+        this.scaled_margin = {x: 0, y: 0};
 
-        if(this.desired_scale.y/this.desired_scale.x != this.actual_scale.y/this.actual_scale.x){
-            console.log('scale resize')
-            console.log('desired scale: ', this.desired_scale.y/this.desired_scale.x);
-            console.log('actual scale: ', this.actual_scale.y/this.actual_scale.x);
+
+        if(this.actual_scale.x/this.actual_scale.y > this.desired_scale.x/this.desired_scale.y){
+            this.use_scale.x = this.actual_scale.x - ((this.actual_scale.x/this.actual_scale.y)-(this.desired_scale.x/this.desired_scale.y))*this.actual_scale.y;
+            this.scaled_margin.x = this.actual_scale.x - this.use_scale.x; // get margin
+            
+    
+
+            this.use_scale.y = this.actual_scale.y;
+            // console.log("actual scale: ", this.actual_scale);
+            // console.log("use scale: ", this.use_scale);
         }
-        if(this.desired_scale.y/this.desired_scale.x > this.actual_scale.y/this.actual_scale.x){
-            console.log('scale resize')
-            console.log('desired scale: ', this.desired_scale.y/this.desired_scale.x);
-            console.log('actual scale: ', this.actual_scale.y/this.actual_scale.x);
+        if(this.actual_scale.y/this.actual_scale.x > this.desired_scale.y/this.desired_scale.x){
+            this.use_scale.y = this.actual_scale.y - ((this.actual_scale.y/this.actual_scale.x)-(this.desired_scale.y/this.desired_scale.x  ))*this.actual_scale.x;
+            this.scaled_margin.y = this.actual_scale.y - this.use_scale.y; // get margin
+            this.use_scale.x = this.actual_scale.x;
+
+            // console.log("actual scale: ", this.actual_scale);
+            // console.log("use scale: ", this.use_scale);  
         }
+
+        this.scaled_units = {x:this.use_scale.x/16, y:this.use_scale.y/9};
+
+        //this.size_canvas_for_16_9_scale();
 
 
         //this.screen_scale = {x:16, y:9};
@@ -138,18 +155,17 @@ class Scene{
         this.instruction_background_color = "#333";
         this.color = "#ccc";
      
-        this.font_size = this.canvas.height/35;
+        this.font_size = this.scaled_units.y/4;
         this.font = this.font_size.toString()+'px Arial';
         this.headline_font_size = this.font_size*2;
         this.headline_font = this.headline_font_size.toString()+'px Arial';
         this.line_spacing = 1.7
 
         //obj
-        this.plane = new CoordinatePlane(ctx, this.canvas.width*0.1, this.canvas.height*0.1,this.canvas.width*0.9,this.canvas.height*0.9);
         // set plane unit size so there are 8 units horizontal and 6 units vertical
-        this.button_width = this.canvas.width/14;
-        this.button_height = this.canvas.height/14;
-        this.next_button = new Button(ctx, 'Next', this.canvas.width - this.button_width - 10, 10, this.button_width,this.button_height);
+        this.button_width = this.use_scale.x/14;
+        this.button_height = this.use_scale.y/14;
+        this.next_button = new Button(ctx, 'Next', this.make_smu_x(1) - this.button_width - 10, this.make_smu_y(0.01), this.button_width,this.button_height);
         this.next_button.font_size = this.font_size;
         this.next_button.on_click = () => {
             if(this.is_task_complete){this.end_condition = true}
@@ -161,13 +177,46 @@ class Scene{
         }
         this.buttons = [];
 
+        window.addEventListener('resize', this.resize())
+
 
 
     }
+    resize = ()=>{
+        console.log('resize');
+    }
+    make_plane = ()=>{
+        this.plane = new CoordinatePlane(this.ctx, this.make_smu_x(0.1), this.make_smu_y(0.1),this.make_smu_x(0.9),this.make_smu_y(0.9));
+        let plane_width = this.use_scale.x*0.8;
+        let unit_size = plane_width/17;
+        this.plane.reset_unit_size(unit_size);
+    }
 
-    
+    frame_use_scale = ()=>{
+        this.ctx.lineWidth = 5;
+        this.ctx.strokeStyle = '#ccc';
+        let posX = this.scaled_margin.x/2;
+        let posY = this.scaled_margin.y/2
+        this.ctx.strokeRect(posX,posY,this.use_scale.x, this.use_scale.y);
+    }
+
+    size_canvas_for_16_9_scale = ()=>{
+        this.canvas.marginLeft = this.scaled_margin.x/2;
+        this.canvas.marginTop = this.scaled_margin.y/2;
+    }
 
 
+    // make scaled_margin_unit for values 0-1 
+
+    make_smu_x = (value)=>{  
+        let smu = value*this.use_scale.x + this.scaled_margin.x/2;
+        return smu;
+    } 
+
+    make_smu_y = (value)=>{
+        let smu = value*this.use_scale.y+ this.scaled_margin.y/2;
+        return smu;
+    }
 
     add_all_listeners = ()=>{
         this.keydown.forEach((listener)=>{
@@ -205,7 +254,7 @@ class Scene{
         })
     }
 
-    show_time = ()=>{
+    display_time = ()=>{
         let now = new Date();
         let diff = this.start - now;
         //let elapsed = now - this.start;
@@ -216,7 +265,7 @@ class Scene{
         let seconds = time%60;
         this.ctx.fillStyle = '#ccc';
         this.ctx.font = '60px Arial'
-        this.display_text_lines(['total time: ' + minutes + ' : ' + seconds], 50, this.canvas.height - 100);
+        this.display_text_lines(['total time: ' + minutes + ' : ' + seconds], this.make_smu_x(0.1), this.make_smu_y(0.95));
         //console.log(time);
         
        // return time;
@@ -239,14 +288,14 @@ class Scene{
         this.ctx.fillStyle = this.color;
         this.ctx.font = this.headline_font;
         let width_diff = this.ctx.measureText(title).width;
-        this.ctx.fillText(title, this.canvas.width/2 - width_diff/2, this.headline_font_size);
+        this.ctx.fillText(title, this.make_smu_x(0.5) - width_diff/2, this.make_smu_y(.06));
     }
 
     display_text_lines(lines, x=null, y=null){
         this.ctx.font = this.font;
         
-        let xPos = 100;
-        let yPos = this.headline_font_size*3;
+        let xPos = this.make_smu_x(0.1);
+        let yPos = this.make_smu_y(0.2);
         if(x){xPos = x};
         if(y){yPos = y};
         
@@ -266,13 +315,12 @@ class Scene{
         this.set_background();
         // //headline
         this.display_title(this.instructions.headline + " - Instructions");
-        //this.show_time();
 
         //lines
         this.display_text_lines(this.instructions.lines)
 
         this.display_score();
-        this.show_time();
+        this.display_time();
     }
 
     display_score(){

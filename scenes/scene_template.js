@@ -18,11 +18,13 @@ const build_scene = (ctx) =>{
     // contents of scene
     scene.contents = ()=>{
 
+    scene.make_plane();
+
          // set desired score - defaults to 10
     scene.score_needed = 0
 
     // decide if scene will have a plance
-    scene.plane = new CoordinatePlane(ctx, scene.canvas.width*0.1, scene.canvas.height*0.1,scene.canvas.width*0.9,scene.canvas.height*0.9);
+    //scene.plane = new CoordinatePlane(ctx, scene.canvas.width*0.1, scene.canvas.height*0.1,scene.canvas.width*0.9,scene.canvas.height*0.9);
 
     // create instructions
     scene.instructions = new Instructions('Template Scene', ['Template Scene Instructions', 'line 1', 'line 2', 'line 3']);
@@ -85,8 +87,11 @@ const build_scene = (ctx) =>{
     
                 // display next button
                 scene.display_next_button();
+
                 // displays instructions if i is pressed
                 if(scene.instructions_visible){scene.display_instructions();}
+
+                scene.frame_use_scale();
      
                requestAnimationFrame(scene.animation_loop); // start loop again
                 }else{ // otherwise break the loop

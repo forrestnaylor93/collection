@@ -63,8 +63,9 @@ const build_scene = (ctx) =>{
         console.log('howdy');
 
         // adjust plane
-        console.log(scene.plane);
-        scene.plane.reset_unit_size(100);
+       
+        scene.make_plane();
+        //scene.plane.reset_unit_size(100);
         
         
   
@@ -87,6 +88,8 @@ const build_scene = (ctx) =>{
     
                //display score
                 scene.display_score();
+
+                scene.frame_use_scale();
     
                 // display next button
                 scene.display_next_button();

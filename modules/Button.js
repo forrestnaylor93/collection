@@ -33,6 +33,8 @@ class Button{
                 //console.log(this.is_mouse_on)
         })
 
+       
+
         
 
         this.canvas.addEventListener('mousedown', (e)=>{
@@ -42,6 +44,9 @@ class Button{
             }
         })
     }
+
+
+    
 
     on_click = (end_condition)=>{
         //console.log(this.end_condition)
@@ -67,7 +72,7 @@ class Button{
         this.ctx.strokeStyle = this.off_color;
             this.ctx.lineWidth = 5;
             this.ctx.strokeRect(this.x, this.y, this.width, this.height);
-
+        this.font = this.font_size.toString() + "px Arial";
         this.ctx.font = this.font;
         this.ctx.fillStyle = this.text_color;
 
